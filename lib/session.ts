@@ -1,18 +1,17 @@
 import "server-only";
-import { SignJWT, jwtVerify } from "jose";
+import { SignJWT, jwtVerify, type JWTPayload } from "jose";
 import { cookies } from "next/headers";
 
 const secretKey = process.env.JWT_SECRET || "zound_super_secret_jwt_key";
 const encodedKey = new TextEncoder().encode(secretKey);
 
-interface SessionPayload {
+interface SessionPayload extends JWTPayload {
   userId: string;
   email: string;
   username: string;
-  expiresAt: Date;
 }
 
-export async function encrypt(payload: any) {
+export async function encrypt(payload: JWTPayload) {
   return new SignJWT(payload)
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
@@ -25,8 +24,8 @@ export async function decrypt(session: string | undefined = "") {
     const { payload } = await jwtVerify(session, encodedKey, {
       algorithms: ["HS256"],
     });
-    return payload as unknown as SessionPayload;
-  } catch (error) {
+    return payload as SessionPayload;
+  } catch {
     return null;
   }
 }
@@ -40,8 +39,8 @@ export async function getSession() {
 
 export async function createSession(userId: string, email: string, username: string) {
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-  const sessionToken = await encrypt({ userId, email, username, expiresAt });
-  
+  const sessionToken = await encrypt({ userId, email, username });
+
   const cookieStore = await cookies();
   cookieStore.set("zound_session", sessionToken, {
     httpOnly: true,

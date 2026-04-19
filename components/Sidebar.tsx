@@ -11,10 +11,16 @@ import {
 } from "react-icons/md";
 import { PlaylistModal } from "./PlaylistModal";
 
+interface SidebarPlaylist {
+  id: string;
+  name: string;
+  coverUrl: string | null;
+}
+
 export function Sidebar() {
   const pathname = usePathname();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [playlists, setPlaylists] = useState<any[]>([]);
+  const [playlists, setPlaylists] = useState<SidebarPlaylist[]>([]);
 
   const fetchPlaylists = async () => {
     try {
@@ -33,9 +39,8 @@ export function Sidebar() {
   }, []);
 
   const navItems = [
-    { label: "Home", href: "/", iconOutlined: MdOutlineHome, iconFilled: MdHome },
-    { label: "Search", href: "/search", iconOutlined: MdOutlineSearch, iconFilled: MdSearch },
-    { label: "Your Library", href: "/library", iconOutlined: MdOutlineLibraryMusic, iconFilled: MdLibraryMusic },
+    { label: "Inicio", href: "/", iconOutlined: MdOutlineHome, iconFilled: MdHome },
+    { label: "Tu Biblioteca", href: "/library", iconOutlined: MdOutlineLibraryMusic, iconFilled: MdLibraryMusic },
   ];
 
   return (
@@ -77,23 +82,16 @@ export function Sidebar() {
 
         {/* Library */}
         <div className="bg-surface rounded-lg p-2 flex-1 flex flex-col">
-          <div className="px-4 py-3 flex items-center justify-between text-zinc-400 hover:text-white cursor-pointer transition-colors font-bold">
-            <div className="flex items-center gap-4">
-              <MdOutlineLibraryMusic className="text-2xl" />
-              <span>Your Library</span>
-            </div>
-          </div>
-          
-          <div className="mt-4 flex-1 overflow-y-auto px-2 space-y-3 pb-24 hide-scrollbar">
+          <div className="mt-2 flex-1 overflow-y-auto px-2 space-y-3 pb-24 hide-scrollbar">
             {playlists.length === 0 ? (
               <div className="px-3 py-4 bg-zinc-800/40 rounded-lg">
-                <h4 className="text-white font-bold mb-1">Create your first playlist</h4>
-                <p className="text-sm">It's easy, we'll help you</p>
+                <h4 className="text-white font-bold mb-1">Crea tu primera playlist</h4>
+                <p className="text-sm">Es fácil, te ayudaremos</p>
                 <button 
                   onClick={() => setIsModalOpen(true)}
                   className="mt-4 bg-white text-black font-bold px-4 py-1.5 rounded-full text-sm hover:scale-105 transition-transform"
                 >
-                  Create playlist
+                  Crear playlist
                 </button>
               </div>
             ) : (

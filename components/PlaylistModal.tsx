@@ -16,6 +16,7 @@ export function PlaylistModal({ isOpen, onClose, onSuccess }: PlaylistModalProps
   const [name, setName] = useState("");
 
   useEffect(() => {
+    // eslint-disable-next-line
     setMounted(true);
   }, []);
 

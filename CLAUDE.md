@@ -12,6 +12,7 @@ pnpm build        # Production build
 pnpm start        # Start production server
 pnpm lint         # Run ESLint
 pnpm prisma db seed   # Seed the database (prisma/seed.ts)
+pnpm sync:gcs     # Sync GCS catalog (audio + covers) into Artist/Album/Song (scripts/sync-gcs.ts)
 ```
 
 Docker (local development with PostgreSQL):

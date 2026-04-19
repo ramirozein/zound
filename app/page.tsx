@@ -1,55 +1,124 @@
 import React from "react";
+import { unstable_cache } from "next/cache";
 import { AlbumCard } from "@/components/AlbumCard";
 import { getSession } from "@/lib/session";
 import { DashboardHeader } from "@/components/DashboardHeader";
 import { RecommendedShelf } from "@/components/RecommendedShelf";
+import { db as prisma } from "@/lib/db";
+import { MdLibraryMusic } from "react-icons/md";
 
-const MOCK_IMAGES = {
-  synth: "/api/image?path=C:/Users/ramir/.gemini/antigravity/brain/70cf9808-0d29-4211-adb7-9be39538ccb7/synthwave_album_cover_1776444696678.png",
-  lofi: "/api/image?path=C:/Users/ramir/.gemini/antigravity/brain/70cf9808-0d29-4211-adb7-9be39538ccb7/lofi_beats_cover_1776444709709.png",
-  techno: "/api/image?path=C:/Users/ramir/.gemini/antigravity/brain/70cf9808-0d29-4211-adb7-9be39538ccb7/techno_mix_cover_1776444723262.png",
-  default: "/api/image?path=C:/Users/ramir/.gemini/antigravity/brain/70cf9808-0d29-4211-adb7-9be39538ccb7/synthwave_album_cover_1776444696678.png"
-};
+const getCatalog = unstable_cache(
+  async () => {
+    const [albums, artists, songs] = await Promise.all([
+      prisma.album.findMany({
+        include: { artist: true },
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.artist.findMany({
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.song.findMany({
+        include: { artist: true, album: true },
+        orderBy: { createdAt: "desc" },
+        take: 12,
+      }),
+    ]);
+    return { albums, artists, songs };
+  },
+  ["home-catalog"],
+  { tags: ["catalog"], revalidate: 600 },
+);
 
 export default async function Home() {
   const session = await getSession();
-  const displayUsername = session?.username || "Guest";
+  const displayUsername = session?.username || "Invitado";
+  const { albums, artists, songs } = await getCatalog();
+
+  const quickPlay = albums.slice(0, 6);
+  const hasCatalog = albums.length > 0 || artists.length > 0 || songs.length > 0;
 
   return (
     <div className="min-h-full">
       <DashboardHeader username={displayUsername} />
 
       <div className="p-6 pb-24 md:pb-8">
-        {/* Quick Play (Recents) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
-          <AlbumCard id="q1" title="Synthwave Mix" artist="Zound Focus" coverUrl={MOCK_IMAGES.synth} isSquare={false} />
-          <AlbumCard id="q2" title="Lofi Evening" artist="Zound Chill" coverUrl={MOCK_IMAGES.lofi} isSquare={false} />
-          <AlbumCard id="q3" title="Techno Bunker" artist="Zound Rave" coverUrl={MOCK_IMAGES.techno} isSquare={false} />
-          <AlbumCard id="q4" title="Top Hits Global" artist="Zound Charts" coverUrl={MOCK_IMAGES.default} isSquare={false} />
-          <AlbumCard id="q5" title="Liked Songs" artist={`${session?.username ? "Your" : ""} 345 songs`} coverUrl={MOCK_IMAGES.default} isSquare={false} />
-          <AlbumCard id="q6" title="Your Daily Mix 1" artist="Made for You" coverUrl={MOCK_IMAGES.default} isSquare={false} />
-        </div>
+        {!hasCatalog && (
+          <div className="flex flex-col items-center justify-center py-24 text-zinc-500 gap-3">
+            <MdLibraryMusic className="text-6xl" />
+            <p className="font-semibold text-lg text-zinc-300">Aún no hay música disponible</p>
+            <p className="text-sm">Vuelve pronto — estamos preparando tu catálogo.</p>
+          </div>
+        )}
 
-        {/* AI Recommendations */}
+        {quickPlay.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
+            {quickPlay.map((a, i) => (
+              <AlbumCard
+                key={a.id}
+                id={a.id}
+                title={a.title}
+                artist={a.artist.name}
+                coverUrl={a.coverUrl ?? ""}
+                isSquare={false}
+                eager={i < 3}
+              />
+            ))}
+          </div>
+        )}
+
         <RecommendedShelf />
 
-        {/* Featured Section */}
-        <h2 className="text-xl font-bold text-white mb-4 hover:underline cursor-pointer inline-block">Made for You</h2>
-        <div className="flex overflow-x-auto gap-6 pb-6 hide-scrollbar -mx-6 px-6">
-          <AlbumCard id="s1" title="Daily Mix 1" artist="Synth, Cyberpunk, 80s" coverUrl={MOCK_IMAGES.synth} />
-          <AlbumCard id="s2" title="Daily Mix 2" artist="Lofi, Chillhop, Jazz" coverUrl={MOCK_IMAGES.lofi} />
-          <AlbumCard id="s3" title="Daily Mix 3" artist="Techno, House, Trance" coverUrl={MOCK_IMAGES.techno} />
-          <AlbumCard id="s4" title="Discover Weekly" artist="New music tailored to you" coverUrl={MOCK_IMAGES.default} />
-          <AlbumCard id="s5" title="Release Radar" artist="Catch up on the latest" coverUrl={MOCK_IMAGES.default} />
-        </div>
+        {songs.length > 0 && (
+          <>
+            <h2 className="text-xl font-bold text-white mb-4 hover:underline cursor-pointer inline-block">Canciones nuevas</h2>
+            <div className="flex overflow-x-auto gap-6 pb-6 hide-scrollbar -mx-6 px-6">
+              {songs.map((s) => (
+                <AlbumCard
+                  key={s.id}
+                  id={s.id}
+                  title={s.title}
+                  artist={s.artist.name}
+                  coverUrl={s.album?.coverUrl ?? ""}
+                  audioUrl={s.audioUrl}
+                />
+              ))}
+            </div>
+          </>
+        )}
 
-        {/* Recently Played */}
-        <h2 className="text-xl font-bold text-white mt-8 mb-4 hover:underline cursor-pointer inline-block">Recently played</h2>
-        <div className="flex overflow-x-auto gap-6 pb-6 hide-scrollbar -mx-6 px-6">
-          <AlbumCard id="r1" title="Lofi Chill" artist="Various Artists" coverUrl={MOCK_IMAGES.lofi} />
-          <AlbumCard id="r2" title="Techno Bunker" artist="Various Artists" coverUrl={MOCK_IMAGES.techno} />
-          <AlbumCard id="r3" title="Synthwave" artist="Various Artists" coverUrl={MOCK_IMAGES.synth} />
-        </div>
+        {albums.length > 0 && (
+          <>
+            <h2 className="text-xl font-bold text-white mt-8 mb-4 hover:underline cursor-pointer inline-block">Álbumes</h2>
+            <div className="flex overflow-x-auto gap-6 pb-6 hide-scrollbar -mx-6 px-6">
+              {albums.map((a) => (
+                <AlbumCard
+                  key={a.id}
+                  id={a.id}
+                  title={a.title}
+                  artist={a.artist.name}
+                  coverUrl={a.coverUrl ?? ""}
+                />
+              ))}
+            </div>
+          </>
+        )}
+
+        {artists.length > 0 && (
+          <>
+            <h2 className="text-xl font-bold text-white mt-8 mb-4 hover:underline cursor-pointer inline-block">Artistas</h2>
+            <div className="flex overflow-x-auto gap-6 pb-6 hide-scrollbar -mx-6 px-6">
+              {artists.map((a) => (
+                <AlbumCard
+                  key={a.id}
+                  id={a.id}
+                  title={a.name}
+                  artist=""
+                  coverUrl={a.imageUrl ?? ""}
+                />
+              ))}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
