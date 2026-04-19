@@ -1,0 +1,39 @@
+# Dependencias
+node_modules
+npm-debug.log*
+
+# Build de Next.js (se genera en Docker)
+.next
+
+# Archivos de entorno
+.env
+.env.local
+.env.production
+
+# Git
+.git
+.gitignore
+
+# IDE
+.vscode
+.idea
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Android/Capacitor (no se usan en Docker)
+android
+capacitor.config.ts
+
+# Documentación
+docs
+*.md
+
+# Gemini agents
+.agents
+
+# Build artifacts locales
+tsconfig.tsbuildinfo
+package-lock.json

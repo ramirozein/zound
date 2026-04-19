@@ -1,0 +1,31 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: zound-db
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-zound_db}
+    ports:
+      - "${DB_PORT:-5422}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  app:
+    build:
+      context: .
+    container_name: zound-app
+    restart: always
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-zound_db}?schema=public
+      NODE_ENV: production
+      JWT_SECRET: ${JWT_SECRET:-zound_super_secret_jwt_key}
+      PORT: ${APP_PORT:-3003}
+    ports:
+      - "${APP_PORT:-3003}:${APP_PORT:-3003}"
+
+volumes:
+  postgres_data:
