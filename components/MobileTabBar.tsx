@@ -14,7 +14,6 @@ export function MobileTabBar() {
 
   const tabs = [
     { label: "Inicio", href: "/", iconOutlined: MdOutlineHome, iconFilled: MdHome },
-    { label: "Buscar", href: "/search", iconOutlined: MdOutlineSearch, iconFilled: MdSearch },
     { label: "Biblioteca", href: "/library", iconOutlined: MdOutlineLibraryMusic, iconFilled: MdLibraryMusic },
   ];
 

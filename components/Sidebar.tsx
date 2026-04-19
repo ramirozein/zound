@@ -34,7 +34,6 @@ export function Sidebar() {
 
   const navItems = [
     { label: "Inicio", href: "/", iconOutlined: MdOutlineHome, iconFilled: MdHome },
-    { label: "Buscar", href: "/search", iconOutlined: MdOutlineSearch, iconFilled: MdSearch },
     { label: "Tu Biblioteca", href: "/library", iconOutlined: MdOutlineLibraryMusic, iconFilled: MdLibraryMusic },
   ];
 
