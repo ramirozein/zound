@@ -6,15 +6,18 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "sync:gcs": "npx tsx scripts/sync-gcs.ts"
   },
   "dependencies": {
+    "@google-cloud/storage": "^7.19.0",
     "@prisma/adapter-pg": "^7.7.0",
     "@prisma/client": "^7.7.0",
     "@types/pg": "^8.20.0",
     "bcryptjs": "^3.0.3",
     "clsx": "^2.1.1",
     "jose": "^6.2.2",
+    "music-metadata": "^11.12.3",
     "next": "16.2.4",
     "openai": "^4.33.0",
     "pg": "^8.20.0",
