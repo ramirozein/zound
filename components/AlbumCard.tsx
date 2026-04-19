@@ -67,19 +67,24 @@ export function AlbumCard({ id, title, artist, coverUrl, audioUrl, isSquare = tr
     return (
       <>
         <div
-          className="flex items-center gap-4 bg-zinc-800/40 hover:bg-zinc-700/50 rounded-md overflow-hidden cursor-pointer group transition-colors flex-1 min-w-[250px]"
-          onClick={handlePlayClick}
+          className={`flex items-center gap-4 bg-zinc-800/40 rounded-md overflow-hidden transition-colors flex-1 min-w-[250px] ${
+            audioUrl ? "hover:bg-zinc-700/50 cursor-pointer group" : "cursor-default"
+          }`}
+          onClick={audioUrl ? handlePlayClick : undefined}
         >
           <CoverImage src={coverUrl} alt={title} className="w-16 h-16 object-cover shadow-md" eager={eager} />
           <span className="text-white font-bold text-sm flex-1 truncate">{title}</span>
-          <div className="ml-auto mr-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-            <button onClick={handleMoreClick} className="p-1 rounded-full hover:bg-white/10 transition-colors">
-              <MdMoreVert className="text-zinc-300 text-xl" />
-            </button>
-            <button onClick={handlePlayClick}>
-              <MdPlayCircleFilled className="text-primary text-4xl hover:scale-105 transition-transform" />
-            </button>
-          </div>
+          
+          {audioUrl && (
+            <div className="ml-auto mr-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button onClick={handleMoreClick} className="p-1 rounded-full hover:bg-white/10 transition-colors" aria-label="Más opciones">
+                <MdMoreVert className="text-zinc-300 text-xl" />
+              </button>
+              <button onClick={handlePlayClick} aria-label="Reproducir">
+                <MdPlayCircleFilled className="text-primary text-4xl hover:scale-105 transition-transform" />
+              </button>
+            </div>
+          )}
         </div>
         <AddToPlaylistModal
           isOpen={modalOpen}
@@ -93,20 +98,28 @@ export function AlbumCard({ id, title, artist, coverUrl, audioUrl, isSquare = tr
 
   return (
     <>
-      <div className="bg-surface p-4 rounded-lg hover:bg-zinc-800 transition-colors cursor-pointer group flex-shrink-0 w-40 sm:w-48">
+      <div 
+        className={`bg-surface p-4 rounded-lg transition-colors flex-shrink-0 w-40 sm:w-48 ${
+          audioUrl ? "hover:bg-zinc-800 cursor-pointer group" : "cursor-default"
+        }`}
+        onClick={audioUrl ? handlePlayClick : undefined}
+      >
         <div className="relative mb-4 w-full aspect-square shadow-lg">
           <CoverImage src={coverUrl} alt={title} className="w-full h-full object-cover rounded-md" eager={eager} />
-          <div className="absolute bottom-2 right-2 flex items-center gap-1 translate-y-3 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all">
-            <button
-              onClick={handleMoreClick}
-              className="p-1 rounded-full bg-black/60 hover:bg-black/80 transition-colors shadow"
-            >
-              <MdMoreVert className="text-white text-lg" />
-            </button>
-            <button onClick={handlePlayClick} className="shadow-xl bg-black rounded-full">
-              <MdPlayCircleFilled className="text-primary text-[50px] drop-shadow-lg block hover:text-primary-hover hover:scale-105 transition-transform" />
-            </button>
-          </div>
+          {audioUrl && (
+            <div className="absolute bottom-2 right-2 flex items-center gap-1 translate-y-3 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all">
+              <button
+                onClick={handleMoreClick}
+                className="p-2 rounded-full bg-black/60 hover:bg-black/80 transition-colors shadow"
+                aria-label="Más opciones"
+              >
+                <MdMoreVert className="text-white text-lg" />
+              </button>
+              <button onClick={handlePlayClick} className="shadow-xl bg-black rounded-full" aria-label="Reproducir">
+                <MdPlayCircleFilled className="text-primary text-[50px] drop-shadow-lg block hover:text-primary-hover hover:scale-105 transition-transform" />
+              </button>
+            </div>
+          )}
         </div>
         <h3 className="text-white font-bold text-sm sm:text-base truncate">{title}</h3>
         <p className="text-zinc-400 text-xs sm:text-sm mt-1 truncate">{artist}</p>

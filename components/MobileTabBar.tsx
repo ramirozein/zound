@@ -18,7 +18,7 @@ export function MobileTabBar() {
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 h-16 bg-black/90 backdrop-blur-lg border-t border-zinc-900 md:hidden flex items-center justify-around z-50">
+    <div className="w-full h-16 bg-black/90 backdrop-blur-lg border-t border-zinc-900 md:hidden flex items-center justify-around z-50">
       {tabs.map((tab) => {
         const isActive = pathname === tab.href;
         return (

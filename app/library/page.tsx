@@ -58,7 +58,7 @@ export default async function LibraryPage() {
           <div className="flex flex-col items-center justify-center py-20 text-zinc-500">
             <MdMusicNote className="text-6xl mb-4" />
             <p className="font-semibold text-lg text-white mb-1">Aún no tienes playlists</p>
-            <p className="text-sm">Crea una nueva presionando el botón "+" en la barra lateral.</p>
+            <p className="text-sm">Crea una nueva presionando el botón &quot;+&quot; en la barra lateral.</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">

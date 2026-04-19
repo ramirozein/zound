@@ -12,7 +12,7 @@ interface SessionPayload {
   expiresAt: Date;
 }
 
-export async function encrypt(payload: any) {
+export async function encrypt(payload: unknown) {
   return new SignJWT(payload)
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()

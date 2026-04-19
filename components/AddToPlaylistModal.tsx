@@ -25,6 +25,7 @@ export function AddToPlaylistModal({ isOpen, onClose, songId, songTitle }: AddTo
   const [pendingId, setPendingId] = useState<string | null>(null);
 
   useEffect(() => {
+    // eslint-disable-next-line
     setMounted(true);
   }, []);
 
@@ -100,7 +101,7 @@ export function AddToPlaylistModal({ isOpen, onClose, songId, songTitle }: AddTo
                   className="flex items-center gap-3 w-full px-3 py-2 rounded-xl bg-zinc-800/40 hover:bg-zinc-700/50 disabled:hover:bg-zinc-800/40 transition-colors text-left"
                 >
                   {pl.coverUrl ? (
-                    <img src={pl.coverUrl} alt={pl.name} className="w-10 h-10 rounded-md object-cover flex-shrink-0" />
+                    <img React-src={pl.coverUrl} src={`/api/cover?url=${encodeURIComponent(pl.coverUrl)}`} alt={pl.name} className="w-10 h-10 rounded-md object-cover flex-shrink-0" />
                   ) : (
                     <div className="w-10 h-10 rounded-md bg-zinc-700 flex-shrink-0" />
                   )}

@@ -130,12 +130,13 @@ interface SongRowProps {
   entry: SongEntry;
   index: number;
   playlistId: string;
+  playlistSongs: SongEntry[];
   onRemoved: (songId: string) => void;
 }
 
-function SongRow({ entry, index, playlistId, onRemoved }: SongRowProps) {
+function SongRow({ entry, index, playlistId, playlistSongs, onRemoved }: SongRowProps) {
   const { song } = entry;
-  const { currentSong, isPlaying, playSong, togglePlay } = usePlayerStore();
+  const { currentSong, isPlaying, playQueue, togglePlay } = usePlayerStore();
   const [hovered, setHovered] = useState(false);
 
   const isActive = currentSong?.id === song.id;
@@ -146,13 +147,14 @@ function SongRow({ entry, index, playlistId, onRemoved }: SongRowProps) {
     if (isActive) {
       togglePlay();
     } else {
-      playSong({
-        id: song.id,
-        title: song.title,
-        artist: song.artist.name,
-        coverUrl,
-        audioUrl: song.audioUrl,
-      });
+      const queueMap = playlistSongs.map(e => ({
+        id: e.song.id,
+        title: e.song.title,
+        artist: e.song.artist.name,
+        coverUrl: e.song.album?.coverUrl ?? "",
+        audioUrl: e.song.audioUrl,
+      }));
+      playQueue(queueMap, index);
     }
   };
 
@@ -167,7 +169,7 @@ function SongRow({ entry, index, playlistId, onRemoved }: SongRowProps) {
       {/* Index / Play icon */}
       <div className="flex items-center justify-center w-8">
         {hovered || isActive ? (
-          <button onClick={handlePlay} className="text-white">
+          <button onClick={handlePlay} className="text-white" aria-label="Reproducir">
             {isActive && isPlaying ? (
               <MdPauseCircleFilled className="text-2xl text-primary" />
             ) : (
@@ -213,7 +215,7 @@ function SongRow({ entry, index, playlistId, onRemoved }: SongRowProps) {
 
 export function PlaylistView({ playlist: initial }: { playlist: PlaylistData }) {
   const [songs, setSongs] = useState<SongEntry[]>(initial.songs);
-  const { playSong } = usePlayerStore();
+  const { playQueue } = usePlayerStore();
 
   const totalDuration = songs.reduce((acc, e) => acc + e.song.duration, 0);
 
@@ -221,16 +223,23 @@ export function PlaylistView({ playlist: initial }: { playlist: PlaylistData }) 
     setSongs((prev) => prev.filter((e) => e.song.id !== songId));
   };
 
+  const getQueueMap = () => songs.map(e => ({
+    id: e.song.id,
+    title: e.song.title,
+    artist: e.song.artist.name,
+    coverUrl: e.song.album?.coverUrl ?? "",
+    audioUrl: e.song.audioUrl,
+  }));
+
   const handlePlayAll = () => {
     if (songs.length === 0) return;
-    const first = songs[0].song;
-    playSong({
-      id: first.id,
-      title: first.title,
-      artist: first.artist.name,
-      coverUrl: first.album?.coverUrl ?? "",
-      audioUrl: first.audioUrl,
-    });
+    playQueue(getQueueMap(), 0);
+  };
+
+  const handleShufflePlay = () => {
+    if (songs.length === 0) return;
+    const shuffled = [...getQueueMap()].sort(() => Math.random() - 0.5);
+    playQueue(shuffled, 0);
   };
 
   return (
@@ -267,10 +276,16 @@ export function PlaylistView({ playlist: initial }: { playlist: PlaylistData }) 
           onClick={handlePlayAll}
           disabled={songs.length === 0}
           className="disabled:opacity-40 transition-transform hover:scale-105"
+          aria-label="Reproducir todo"
         >
           <MdPlayCircleFilled className="text-primary text-[64px] drop-shadow-lg" />
         </button>
-        <button className="p-2 text-zinc-400 hover:text-white transition-colors">
+        <button 
+          onClick={handleShufflePlay}
+          disabled={songs.length === 0}
+          className="p-2 text-zinc-400 hover:text-white transition-colors disabled:opacity-40"
+          aria-label="Reproducir orden aleatorio"
+        >
           <MdShuffle className="text-2xl" />
         </button>
       </div>
@@ -299,6 +314,7 @@ export function PlaylistView({ playlist: initial }: { playlist: PlaylistData }) 
                 entry={entry}
                 index={i}
                 playlistId={initial.id}
+                playlistSongs={songs}
                 onRemoved={handleRemoved}
               />
             ))}

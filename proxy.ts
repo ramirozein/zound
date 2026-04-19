@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { decrypt } from "@/lib/session";
 
-const protectedRoutes = ["/", "/library", "/search"];
+const protectedRoutes = ["/", "/library"];
 const publicRoutes = ["/login", "/register", "/api/image"];
 
 export async function proxy(req: NextRequest) {
