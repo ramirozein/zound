@@ -24,6 +24,11 @@ services:
       NODE_ENV: production
       JWT_SECRET: ${JWT_SECRET:-zound_super_secret_jwt_key}
       PORT: ${APP_PORT:-3003}
+      GOOGLE_KEY: ${GOOGLE_KEY}
+      GCS_BUCKET: ${GCS_BUCKET:-zound-media-bucket}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      APP_URL: ${APP_URL}
+      SYNC_REVALIDATE_TOKEN: ${SYNC_REVALIDATE_TOKEN}
     ports:
       - "${APP_PORT:-3003}:${APP_PORT:-3003}"
 
