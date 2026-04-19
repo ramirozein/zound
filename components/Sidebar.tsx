@@ -108,16 +108,16 @@ export function Sidebar() {
                   Crear Playlist
                 </button>
                 {playlists.map((playlist) => (
-                  <div key={playlist.id} className="w-full text-left px-3 py-2 rounded flex items-center gap-3 text-sm font-bold text-zinc-300 hover:bg-zinc-800/40 hover:text-white transition-colors cursor-pointer">
-                    <div className="w-12 h-12 bg-zinc-800 flex items-center justify-center rounded overflow-hidden">
+                  <Link key={playlist.id} href={`/playlist/${playlist.id}`} className={`w-full text-left px-3 py-2 rounded flex items-center gap-3 text-sm font-bold transition-colors ${pathname === `/playlist/${playlist.id}` ? "bg-zinc-800/60 text-white" : "text-zinc-300 hover:bg-zinc-800/40 hover:text-white"}`}>
+                    <div className="w-12 h-12 bg-zinc-800 flex items-center justify-center rounded overflow-hidden flex-shrink-0">
                       {playlist.coverUrl ? (
                          <img src={playlist.coverUrl} className="w-full h-full object-cover" alt="cover" />
                       ) : (
                          <MdMusicNote className="text-2xl text-zinc-500" />
                       )}
                     </div>
-                    <span>{playlist.name}</span>
-                  </div>
+                    <span className="truncate">{playlist.name}</span>
+                  </Link>
                 ))}
               </div>
             )}

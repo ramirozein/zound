@@ -7,7 +7,7 @@ const publicRoutes = ["/login", "/register", "/api/image"];
 export async function proxy(req: NextRequest) {
   const path = req.nextUrl.pathname;
 
-  const isProtectedRoute = protectedRoutes.includes(path);
+  const isProtectedRoute = protectedRoutes.includes(path) || path.startsWith("/playlist/");
   const isPublicRoute = publicRoutes.includes(path);
 
   const cookie = req.cookies.get("zound_session")?.value;

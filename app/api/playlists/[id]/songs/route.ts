@@ -44,3 +44,34 @@ export async function POST(
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await getSession();
+  if (!session?.userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { id: playlistId } = await params;
+  const { songId } = await req.json();
+
+  if (!songId) {
+    return NextResponse.json({ error: "songId is required" }, { status: 400 });
+  }
+
+  const playlist = await prisma.playlist.findFirst({
+    where: { id: playlistId, userId: session.userId },
+  });
+
+  if (!playlist) {
+    return NextResponse.json({ error: "Playlist not found" }, { status: 404 });
+  }
+
+  await prisma.playlistSong.delete({
+    where: { playlistId_songId: { playlistId, songId } },
+  });
+
+  return NextResponse.json({ success: true });
+}
