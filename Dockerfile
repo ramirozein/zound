@@ -10,8 +10,12 @@ COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED=1
 
-RUN DATABASE_URL="postgresql://dummy:dummy@dummy:5432/dummy" npx prisma generate \
- && DATABASE_URL="postgresql://dummy:dummy@dummy:5432/dummy" npx next build
+RUN DATABASE_URL="postgresql://dummy:dummy@dummy:5432/dummy" \
+    OPENAI_API_KEY="build-placeholder" \
+    npx prisma generate \
+ && DATABASE_URL="postgresql://dummy:dummy@dummy:5432/dummy" \
+    OPENAI_API_KEY="build-placeholder" \
+    npx next build
 
 FROM base AS runner
 WORKDIR /app
