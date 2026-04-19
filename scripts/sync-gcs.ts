@@ -257,6 +257,34 @@ async function main() {
 
   await prisma.$disconnect();
   await pool.end();
+
+  await revalidateCatalog(created + updated);
+}
+
+async function revalidateCatalog(changedCount: number): Promise<void> {
+  const appUrl = process.env.APP_URL;
+  const token = process.env.SYNC_REVALIDATE_TOKEN;
+  if (!appUrl || !token) {
+    console.log("[sync-gcs] revalidation skipped (APP_URL or SYNC_REVALIDATE_TOKEN not set)");
+    return;
+  }
+  if (changedCount === 0) {
+    console.log("[sync-gcs] no changes, skipping revalidation");
+    return;
+  }
+  try {
+    const res = await fetch(`${appUrl.replace(/\/$/, "")}/api/admin/revalidate-catalog`, {
+      method: "POST",
+      headers: { "x-revalidate-token": token },
+    });
+    if (!res.ok) {
+      console.warn(`[sync-gcs] revalidation failed: ${res.status} ${await res.text()}`);
+    } else {
+      console.log("[sync-gcs] cache revalidated");
+    }
+  } catch (err) {
+    console.warn(`[sync-gcs] revalidation error: ${(err as Error).message}`);
+  }
 }
 
 main().catch((e) => {

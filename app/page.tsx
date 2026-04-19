@@ -45,8 +45,8 @@ export default async function Home() {
         {!hasCatalog && (
           <div className="flex flex-col items-center justify-center py-24 text-zinc-500 gap-3">
             <MdLibraryMusic className="text-6xl" />
-            <p className="font-semibold text-lg text-zinc-300">Catálogo vacío</p>
-            <p className="text-sm">Ejecuta <code className="px-2 py-0.5 bg-zinc-800 rounded">pnpm sync:gcs</code> para cargar contenido desde Google Cloud.</p>
+            <p className="font-semibold text-lg text-zinc-300">Aún no hay música disponible</p>
+            <p className="text-sm">Vuelve pronto — estamos preparando tu catálogo.</p>
           </div>
         )}
 
