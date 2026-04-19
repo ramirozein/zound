@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
 import { db as prisma } from "@/lib/db";
-import OpenAI from "openai";
-
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
-  const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  const { default: OpenAI } = await import("openai");
+  const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY ?? "missing" });
   const session = await getSession();
 
   if (!session?.userId) {
