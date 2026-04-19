@@ -7,6 +7,7 @@ import {
   MdShuffle, MdRepeat, MdVolumeUp, MdVolumeOff
 } from "react-icons/md";
 import { usePlayerStore } from "@/store/usePlayerStore";
+import { proxyCoverUrl } from "@/lib/gcs";
 
 export function BottomPlayer() {
   const { 
@@ -83,11 +84,16 @@ export function BottomPlayer() {
 
       {/* Current Track Info */}
       <div className="flex items-center gap-3 w-1/3">
-        <img 
-          src={currentSong.coverUrl} 
-          alt={currentSong.title} 
-          className="w-14 h-14 rounded shadow-lg object-cover"
-        />
+        {currentSong.coverUrl ? (
+          <img
+            src={proxyCoverUrl(currentSong.coverUrl)}
+            alt={currentSong.title}
+            className="w-14 h-14 rounded shadow-lg object-cover flex-shrink-0"
+            decoding="async"
+          />
+        ) : (
+          <div className="w-14 h-14 rounded shadow-lg bg-zinc-800 flex-shrink-0" />
+        )}
         <div className="flex flex-col hidden sm:flex truncate">
           <span className="text-white text-sm font-semibold hover:underline cursor-pointer truncate">{currentSong.title}</span>
           <span className="text-zinc-400 text-xs hover:underline cursor-pointer truncate">{currentSong.artist}</span>

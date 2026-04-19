@@ -68,7 +68,7 @@ export function RecommendedShelf() {
             id={rec.id} 
             title={rec.title} 
             artist={rec.artist.name} 
-            coverUrl={rec.album?.coverUrl || "/api/image?path=C:/Users/ramir/.gemini/antigravity/brain/70cf9808-0d29-4211-adb7-9be39538ccb7/synthwave_album_cover_1776444696678.png"} 
+            coverUrl={rec.album?.coverUrl ?? ""}
             audioUrl={rec.audioUrl}
           />
         ))}

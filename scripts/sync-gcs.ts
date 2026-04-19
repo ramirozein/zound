@@ -8,12 +8,30 @@ import "dotenv/config";
 
 const BUCKET_NAME = process.env.GCS_BUCKET ?? "zound-media-bucket";
 const AUDIO_PREFIX = process.env.GCS_AUDIO_PREFIX ?? "protected/audio/mp3/";
-const IMAGE_PREFIX = process.env.GCS_IMAGE_PREFIX ?? "protected/images/";
+const ARTIST_IMAGE_PREFIX = process.env.GCS_ARTIST_IMAGE_PREFIX ?? "public/artists/";
+const ALBUM_COVER_PREFIX = process.env.GCS_ALBUM_COVER_PREFIX ?? "public/covers/";
 const IMAGE_EXTS = [".jpg", ".jpeg", ".png", ".webp"];
 const AUDIO_EXT = ".mp3";
 const DURATION_PROBE_BYTES = 2 * 1024 * 1024;
 
 type ParsedAudio = { artist: string; album: string | null; title: string };
+
+function stripFilenameTags(name: string): string {
+  return name
+    .replace(/\s*\[[^\]]*\]\s*/g, " ")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
+
+function parseFlatFilename(fileNameNoExt: string): ParsedAudio | null {
+  const cleaned = stripFilenameTags(fileNameNoExt);
+  const sepIdx = cleaned.indexOf(" - ");
+  if (sepIdx <= 0) return null;
+  const artist = cleaned.slice(0, sepIdx).trim();
+  const title = cleaned.slice(sepIdx + 3).trim();
+  if (!artist || !title) return null;
+  return { artist, album: null, title };
+}
 
 function getStorage(): Storage {
   const raw = process.env.GOOGLE_KEY;
@@ -39,13 +57,24 @@ function parseAudioPath(fullPath: string, prefix: string): ParsedAudio | null {
   if (!fullPath.toLowerCase().endsWith(AUDIO_EXT)) return null;
   const rel = fullPath.slice(prefix.length);
   const parts = rel.split("/").filter(Boolean);
-  if (parts.length < 2) return null;
+  if (parts.length === 0) return null;
   const fileName = parts.pop() as string;
-  const title = fileName.slice(0, -AUDIO_EXT.length).trim();
-  if (!title) return null;
-  if (parts.length === 2) return { artist: parts[0], album: parts[1], title };
-  if (parts.length === 1) return { artist: parts[0], album: null, title };
-  return null;
+  const fileNameNoExt = fileName.slice(0, -AUDIO_EXT.length).trim();
+  if (!fileNameNoExt) return null;
+
+  if (parts.length >= 2) {
+    return {
+      artist: parts[0],
+      album: parts[parts.length - 1],
+      title: fileNameNoExt,
+    };
+  }
+  if (parts.length === 1) {
+    return { artist: parts[0], album: null, title: fileNameNoExt };
+  }
+  const flat = parseFlatFilename(fileNameNoExt);
+  if (!flat) return null;
+  return { ...flat, album: flat.title };
 }
 
 async function fetchDurationSec(bucket: Bucket, path: string): Promise<number> {
@@ -67,15 +96,23 @@ async function fetchDurationSec(bucket: Bucket, path: string): Promise<number> {
   return Math.round(meta.format.duration ?? 0);
 }
 
-function pickCover(key: string, covers: string[]): string | null {
-  if (!covers.length) return null;
+function pickImage(key: string, pool: string[]): string | null {
+  if (!pool.length) return null;
   const h = createHash("sha1").update(key).digest();
-  return covers[h.readUInt32BE(0) % covers.length];
+  return pool[h.readUInt32BE(0) % pool.length];
 }
 
-async function listPaths(bucket: Bucket, prefix: string): Promise<string[]> {
+async function listImageUrls(bucket: Bucket, prefix: string): Promise<string[]> {
   const [files] = await bucket.getFiles({ prefix });
-  return files.map((f) => f.name);
+  return files
+    .map((f) => f.name)
+    .filter((n) => IMAGE_EXTS.some((ext) => n.toLowerCase().endsWith(ext)))
+    .map((n) => publicUrl(BUCKET_NAME, n));
+}
+
+async function listAudioPaths(bucket: Bucket, prefix: string): Promise<string[]> {
+  const [files] = await bucket.getFiles({ prefix });
+  return files.map((f) => f.name).filter((n) => n.toLowerCase().endsWith(AUDIO_EXT));
 }
 
 async function main() {
@@ -87,20 +124,19 @@ async function main() {
   const bucket = storage.bucket(BUCKET_NAME);
 
   console.log(
-    `[sync-gcs] bucket=${BUCKET_NAME} audio=${AUDIO_PREFIX} images=${IMAGE_PREFIX}`,
+    `[sync-gcs] bucket=${BUCKET_NAME} audio=${AUDIO_PREFIX} artists=${ARTIST_IMAGE_PREFIX} covers=${ALBUM_COVER_PREFIX}`,
   );
 
-  const [audioPaths, imagePaths] = await Promise.all([
-    listPaths(bucket, AUDIO_PREFIX),
-    listPaths(bucket, IMAGE_PREFIX),
+  const [audioPaths, artistImages, coverImages] = await Promise.all([
+    listAudioPaths(bucket, AUDIO_PREFIX),
+    listImageUrls(bucket, ARTIST_IMAGE_PREFIX),
+    listImageUrls(bucket, ALBUM_COVER_PREFIX),
   ]);
 
-  const coverUrls = imagePaths
-    .filter((p) => IMAGE_EXTS.some((ext) => p.toLowerCase().endsWith(ext)))
-    .map((p) => publicUrl(BUCKET_NAME, p));
+  const artistImagePool = artistImages.length ? artistImages : coverImages;
 
   console.log(
-    `[sync-gcs] discovered audio=${audioPaths.length} images=${coverUrls.length}`,
+    `[sync-gcs] discovered audio=${audioPaths.length} artist_images=${artistImages.length} covers=${coverImages.length} (artist fallback=${artistImages.length ? "none" : "covers"})`,
   );
 
   let created = 0;
@@ -135,8 +171,13 @@ async function main() {
         artist = await prisma.artist.create({
           data: {
             name: parsed.artist,
-            imageUrl: pickCover(`artist:${parsed.artist}`, coverUrls),
+            imageUrl: pickImage(`artist:${parsed.artist}`, artistImagePool),
           },
+        });
+      } else if (!artist.imageUrl && artistImagePool.length) {
+        artist = await prisma.artist.update({
+          where: { id: artist.id },
+          data: { imageUrl: pickImage(`artist:${parsed.artist}`, artistImagePool) },
         });
       }
 
@@ -151,9 +192,19 @@ async function main() {
               title: parsed.album,
               artistId: artist.id,
               releaseAt: new Date(),
-              coverUrl: pickCover(
+              coverUrl: pickImage(
                 `album:${artist.id}:${parsed.album}`,
-                coverUrls,
+                coverImages,
+              ),
+            },
+          });
+        } else if (!album.coverUrl && coverImages.length) {
+          album = await prisma.album.update({
+            where: { id: album.id },
+            data: {
+              coverUrl: pickImage(
+                `album:${artist.id}:${parsed.album}`,
+                coverImages,
               ),
             },
           });

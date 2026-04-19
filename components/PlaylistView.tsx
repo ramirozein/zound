@@ -8,6 +8,7 @@ import {
 } from "react-icons/md";
 import { usePlayerStore } from "@/store/usePlayerStore";
 import { AddToPlaylistModal } from "@/components/AddToPlaylistModal";
+import { proxyCoverUrl } from "@/lib/gcs";
 
 interface Album {
   id: string;
@@ -184,7 +185,7 @@ function SongRow({ entry, index, playlistId, onRemoved }: SongRowProps) {
       <div className="flex items-center gap-3 min-w-0" onClick={handlePlay}>
         <div className="w-10 h-10 flex-shrink-0 rounded overflow-hidden bg-zinc-800">
           {coverUrl ? (
-            <img src={coverUrl} alt={song.title} className="w-full h-full object-cover" />
+            <img src={proxyCoverUrl(coverUrl)} alt={song.title} className="w-full h-full object-cover" loading="lazy" decoding="async" />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
               <MdMusicNote className="text-zinc-500 text-xl" />
@@ -240,7 +241,7 @@ export function PlaylistView({ playlist: initial }: { playlist: PlaylistData }) 
           {/* Cover */}
           <div className="w-44 h-44 flex-shrink-0 rounded-lg shadow-2xl overflow-hidden bg-zinc-800">
             {initial.coverUrl ? (
-              <img src={initial.coverUrl} alt={initial.name} className="w-full h-full object-cover" />
+              <img src={proxyCoverUrl(initial.coverUrl)} alt={initial.name} className="w-full h-full object-cover" decoding="async" fetchPriority="high" />
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-violet-800 to-indigo-900">
                 <MdMusicNote className="text-white/50 text-7xl" />

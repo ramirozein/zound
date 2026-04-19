@@ -13,9 +13,9 @@ export function MobileTabBar() {
   const pathname = usePathname();
 
   const tabs = [
-    { label: "Home", href: "/", iconOutlined: MdOutlineHome, iconFilled: MdHome },
-    { label: "Search", href: "/search", iconOutlined: MdOutlineSearch, iconFilled: MdSearch },
-    { label: "Library", href: "/library", iconOutlined: MdOutlineLibraryMusic, iconFilled: MdLibraryMusic },
+    { label: "Inicio", href: "/", iconOutlined: MdOutlineHome, iconFilled: MdHome },
+    { label: "Buscar", href: "/search", iconOutlined: MdOutlineSearch, iconFilled: MdSearch },
+    { label: "Biblioteca", href: "/library", iconOutlined: MdOutlineLibraryMusic, iconFilled: MdLibraryMusic },
   ];
 
   return (

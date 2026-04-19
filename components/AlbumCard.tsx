@@ -1,9 +1,41 @@
 "use client";
 
 import React, { useState } from "react";
-import { MdPlayCircleFilled, MdMoreVert } from "react-icons/md";
+import { MdPlayCircleFilled, MdMoreVert, MdMusicNote } from "react-icons/md";
 import { usePlayerStore } from "@/store/usePlayerStore";
 import { AddToPlaylistModal } from "@/components/AddToPlaylistModal";
+import { proxyCoverUrl } from "@/lib/gcs";
+
+function CoverImage({
+  src,
+  alt,
+  className,
+  eager = false,
+}: {
+  src: string;
+  alt: string;
+  className: string;
+  eager?: boolean;
+}) {
+  const resolved = proxyCoverUrl(src);
+  if (!resolved) {
+    return (
+      <div className={`${className} flex items-center justify-center bg-gradient-to-br from-zinc-700 to-zinc-900`}>
+        <MdMusicNote className="text-white/40 text-3xl" />
+      </div>
+    );
+  }
+  return (
+    <img
+      src={resolved}
+      alt={alt}
+      className={className}
+      loading={eager ? "eager" : "lazy"}
+      decoding="async"
+      fetchPriority={eager ? "high" : "auto"}
+    />
+  );
+}
 
 interface AlbumCardProps {
   id: string;
@@ -12,9 +44,10 @@ interface AlbumCardProps {
   coverUrl: string;
   audioUrl?: string;
   isSquare?: boolean;
+  eager?: boolean;
 }
 
-export function AlbumCard({ id, title, artist, coverUrl, audioUrl, isSquare = true }: AlbumCardProps) {
+export function AlbumCard({ id, title, artist, coverUrl, audioUrl, isSquare = true, eager = false }: AlbumCardProps) {
   const playSong = usePlayerStore((state) => state.playSong);
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -37,7 +70,7 @@ export function AlbumCard({ id, title, artist, coverUrl, audioUrl, isSquare = tr
           className="flex items-center gap-4 bg-zinc-800/40 hover:bg-zinc-700/50 rounded-md overflow-hidden cursor-pointer group transition-colors flex-1 min-w-[250px]"
           onClick={handlePlayClick}
         >
-          <img src={coverUrl} alt={title} className="w-16 h-16 object-cover shadow-md" />
+          <CoverImage src={coverUrl} alt={title} className="w-16 h-16 object-cover shadow-md" eager={eager} />
           <span className="text-white font-bold text-sm flex-1 truncate">{title}</span>
           <div className="ml-auto mr-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
             <button onClick={handleMoreClick} className="p-1 rounded-full hover:bg-white/10 transition-colors">
@@ -62,7 +95,7 @@ export function AlbumCard({ id, title, artist, coverUrl, audioUrl, isSquare = tr
     <>
       <div className="bg-surface p-4 rounded-lg hover:bg-zinc-800 transition-colors cursor-pointer group flex-shrink-0 w-40 sm:w-48">
         <div className="relative mb-4 w-full aspect-square shadow-lg">
-          <img src={coverUrl} alt={title} className="w-full h-full object-cover rounded-md" />
+          <CoverImage src={coverUrl} alt={title} className="w-full h-full object-cover rounded-md" eager={eager} />
           <div className="absolute bottom-2 right-2 flex items-center gap-1 translate-y-3 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all">
             <button
               onClick={handleMoreClick}

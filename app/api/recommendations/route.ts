@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
 
     // 2. Get available songs from the database to recommend from
     const availableSongs = await prisma.song.findMany({
-      include: { artist: true },
+      include: { artist: true, album: true },
       take: 50, // Limit for prompt size
     });
 
@@ -74,7 +74,7 @@ Do not include markdown blocks like \`\`\`json, just return the raw array.
     // 4. Fetch the selected songs
     const recommendations = await prisma.song.findMany({
       where: { id: { in: recommendedIds } },
-      include: { artist: true },
+      include: { artist: true, album: true },
     });
 
     return NextResponse.json(recommendations);

@@ -10,7 +10,7 @@ export function DashboardHeader({ username }: { username: string }) {
   return (
     <header className="sticky top-0 z-30 bg-black/40 backdrop-blur-md px-6 py-4 flex items-center justify-between">
       <h1 className="text-2xl font-bold text-white tracking-tight">
-        Good to see you, <span className="text-primary">{username}</span>
+        Qué bueno verte, <span className="text-primary">{username}</span>
       </h1>
       
       <div className="flex bg-black/60 rounded-full p-1 gap-1 items-center border border-zinc-800/50">
@@ -24,7 +24,7 @@ export function DashboardHeader({ username }: { username: string }) {
         <button 
           onClick={() => setShowLogout(true)}
           className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-red-500/20 text-white hover:text-red-500 transition-colors"
-          title="Log out"
+          title="Cerrar sesión"
         >
           <MdLogout className="text-xl" />
         </button>
