@@ -42,4 +42,4 @@ EXPOSE 3003
 ENV PORT=3003
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["sh", "-c", "node_modules/.bin/prisma db push --accept-data-loss && (node_modules/.bin/tsx scripts/sync-gcs.ts > /tmp/sync.log 2>&1 &) && node server.js"]
+CMD ["sh", "-c", "node_modules/.bin/prisma db push --accept-data-loss && (node_modules/.bin/tsx scripts/sync-gcs.ts &) && node server.js"]
