@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Zound</string>
+    <string name="title_activity_main">Zound</string>
+    <string name="package_name">com.ramirozein.zound</string>
+    <string name="custom_url_scheme">com.ramirozein.zound</string>
+</resources>
